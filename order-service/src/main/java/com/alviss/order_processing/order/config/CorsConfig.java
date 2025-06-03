@@ -1,33 +1,26 @@
 package com.alviss.order_processing.order.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.List;
-
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-    @Value("${cors.allowed-origins}")
-    private List<String> allowedOrigins;
+    private final CorsProperties corsProperties;
 
-    @Value("${cors.allowed-methods}")
-    private List<String> allowedMethods;
-
-    @Value("${cors.allowed-headers}")
-    private List<String> allowedHeaders;
-
-    @Value("${cors.allow-credentials}")
-    private boolean allowCredentials;
+    @Autowired
+    public CorsConfig(CorsProperties corsProperties) {
+        this.corsProperties = corsProperties;
+    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-            .allowedOrigins(allowedOrigins.toArray(new String[0]))
-            .allowedMethods(allowedMethods.toArray(new String[0]))
-            .allowedHeaders(allowedHeaders.toArray(new String[0]))
-            .allowCredentials(allowCredentials);
+            .allowedOrigins(corsProperties.getAllowedOrigins().toArray(new String[0]))
+            .allowedMethods(corsProperties.getAllowedMethods().toArray(new String[0]))
+            .allowedHeaders(corsProperties.getAllowedHeaders().toArray(new String[0]))
+            .allowCredentials(corsProperties.isAllowCredentials());
     }
 }
