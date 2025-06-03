@@ -9,8 +9,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataLoader implements CommandLineRunner {
 
+  private final ProductRepository productRepository;
+
   @Autowired
-  private ProductRepository productRepository;
+  public DataLoader(ProductRepository productRepository) {
+    this.productRepository = productRepository;
+  }
 
   @Override
   public void run(String... args) throws Exception {
