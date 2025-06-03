@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "common.proto"; 
 
 option java_multiple_files = true;
-option java_package = "com.alviss.order_processing";
+option java_package = "com.alviss.order_processing.proto_common";
 option java_outer_classname = "OrderProto";
 
 message Order {
