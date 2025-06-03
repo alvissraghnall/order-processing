@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package orders;
+
+import "google/protobuf/timestamp.proto";
+import "common.proto"; 
+
+option java_multiple_files = true;
+option java_package = "com.alviss.order_processing";
+option java_outer_classname = "OrderProto";
+
+message Order {
+  int64 id = 1;
+  string customer_name = 2;
+  int64 product_id = 3;
+  string product_name = 4;
+  int32 quantity = 5;
+  double price = 6;
+  OrderStatus status = 7;
+  google.protobuf.Timestamp created_at = 8;
+}
+
+enum OrderStatus {
+  PENDING = 0;
+  CONFIRMED = 1;
+  SHIPPED = 2;
+  CANCELLED = 3;
+}
+
+message CreateOrderRequest {
+  string customer_name = 1;
+  int64 product_id = 2;
+  int32 quantity = 3;
+}
+
+message CreateOrderResponse {
+  oneof result {
+    Success success = 1;
+    common.Error error = 2;
+  }
+
+  message Success {
+    Order order = 1;
+    string confirmation_message = 2;
+  }
+}
+
+message GetOrdersRequest {
+  int32 page_size = 1;
+  int32 page_number = 2;
+  string customer_filter = 3;
+}
+
+message GetOrdersResponse {
+  oneof result {
+    Success success = 1;
+    common.Error error = 2;
+  }
+
+  message Success {
+    repeated Order orders = 1;
+    int32 total_pages = 2;
+    int32 current_page = 3;
+    int32 total_orders = 4;
+  }
+}
+
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse);
+}

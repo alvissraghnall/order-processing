@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package inventory;
+
+import "google/protobuf/timestamp.proto";
+import "common.proto"; 
+
+option java_multiple_files = true;
+option java_package = "com.alviss.order_processing";
+option java_outer_classname = "InventoryProto";
+
+message Product {
+  int64 id = 1;
+  string name = 2;
+  double price = 3;
+  int32 stock_quantity = 4;
+}
+
+message CheckStockRequest {
+  int64 product_id = 1;
+  int32 requested_quantity = 2;
+}
+
+message CheckStockResponse {
+  oneof result {
+    SuccessResponse success = 1;
+    common.Error error = 2;
+  }
+
+  message SuccessResponse {
+    bool available = 1;
+    int32 current_stock = 2;
+    Product product = 3;
+  }
+}
+
+message UpdateStockRequest {
+  int64 product_id = 1;
+  int32 quantity_change = 2;
+}
+
+message UpdateStockResponse {
+  oneof result {
+    SuccessResponse success = 1;
+    common.Error error = 2;
+  }
+
+  message SuccessResponse {
+    bool success = 1;
+    int32 new_stock_quantity = 2;
+  }
+}
+
+message GetProductsRequest {
+  int32 page_size = 1;
+  int32 page_number = 2;
+}
+
+message GetProductsResponse {
+  oneof result {
+    SuccessResponse success = 1;
+    common.Error error = 2;
+  }
+
+  message SuccessResponse {
+    repeated Product products = 1;
+    int32 total_pages = 2;
+    int32 current_page = 3;
+  }
+}
+
+service InventoryService {
+  rpc CheckStock(CheckStockRequest) returns (CheckStockResponse);
+  rpc UpdateStock(UpdateStockRequest) returns (UpdateStockResponse);
+  rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
+}
