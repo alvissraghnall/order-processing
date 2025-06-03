@@ -6,11 +6,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.boot.test.context.SpringBootTest.UseMainMethod;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(
+	properties = { "spring.grpc.server.port=0",
+			"spring.grpc.client.default-channel.address=0.0.0.0:${local.grpc.port}" },
+	useMainMethod = UseMainMethod.ALWAYS
+)
 @TestPropertySource(properties = {
     "spring.datasource.url=jdbc:h2:mem:testdb",
     "spring.jpa.hibernate.ddl-auto=create-drop"
