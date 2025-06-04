@@ -110,7 +110,25 @@ public class InventoryGrpcService extends InventoryServiceGrpc.InventoryServiceI
       int pageSize = request.getPageSize();
       int pageNumber = request.getPageNumber();
 
+	  if (pageSize <= 0 || pageNumber <= 0) {
+		  responseObserver.onNext(GetProductsResponse.newBuilder()
+		      .setError(buildError("INVALID_ARGUMENT", "Page size and number must be greater than 0", Map.of()))
+		      .build());
+		  responseObserver.onCompleted();
+		  return;
+	  }
+
       int totalPages = (int) Math.ceil((double) allProducts.size() / pageSize);
+	  int totalProducts = allProducts.size();
+
+	  if ((pageNumber - 1) * pageSize >= totalProducts && totalProducts > 0) {
+		  responseObserver.onNext(GetProductsResponse.newBuilder()
+		      .setError(buildError("PAGE_OUT_OF_RANGE", "Requested page number exceeds available data", Map.of()))
+		      .build());
+		  responseObserver.onCompleted();
+		  return;
+	  }
+
       int startIndex = Math.min((pageNumber - 1) * pageSize, allProducts.size());
       int endIndex = Math.min(startIndex + pageSize, allProducts.size());
 
@@ -139,6 +157,7 @@ public class InventoryGrpcService extends InventoryServiceGrpc.InventoryServiceI
       responseObserver.onNext(GetProductsResponse.newBuilder()
         .setError(buildError("INTERNAL_ERROR", e.getMessage(), Map.of()))
         .build());
+	  responseObserver.onCompleted();
     }
   }
 

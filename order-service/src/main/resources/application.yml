@@ -31,7 +31,11 @@ spring:
       enabled: true
 
   grpc:
+    server:
+      enabled: false
     client:
+      default-channel:
+        address: 'static://localhost:8000'
       channels:
         inventory-service:
           address: 'static://localhost:8000'

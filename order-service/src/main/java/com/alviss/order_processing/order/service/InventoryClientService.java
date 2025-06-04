@@ -9,6 +9,9 @@ public class InventoryClientService {
     
     private final InventoryServiceGrpc.InventoryServiceBlockingStub inventoryServiceStub;
 
+	private static final int DEFAULT_PAGE_SIZE = 10;
+	private static final int DEFAULT_PAGE_NUMBER = 1;
+
 	public InventoryClientService (InventoryServiceGrpc.InventoryServiceBlockingStub inventoryServiceStub) {
         this.inventoryServiceStub = inventoryServiceStub;
     }
@@ -30,9 +33,12 @@ public class InventoryClientService {
             
         return inventoryServiceStub.updateStock(request);
     }
-    
-    public GetProductsResponse getProducts() {
-        GetProductsRequest request = GetProductsRequest.newBuilder().build();
-        return inventoryServiceStub.getProducts(request);
-    }
+
+	public GetProductsResponse getProducts() {
+	    GetProductsRequest request = GetProductsRequest.newBuilder()
+	        .setPageSize(DEFAULT_PAGE_SIZE)
+	        .setPageNumber(DEFAULT_PAGE_NUMBER)
+	        .build();
+	    return inventoryServiceStub.getProducts(request);
+	}
 }

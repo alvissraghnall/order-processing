@@ -55,6 +55,7 @@ class InventoryGrpcServiceTest {
                 .setPrice(29.99)
                 .setStockQuantity(100)
                 .build();
+		reset(productRepository);
     }
 
     @Test
@@ -406,30 +407,28 @@ class InventoryGrpcServiceTest {
         assertEquals(3L, response.getSuccess().getProducts(0).getId());
     }
 
-    @Test
-    void getProducts_WithPageBeyondAvailable_ReturnsEmptyResults() {
-        
-        GetProductsRequest request = GetProductsRequest.newBuilder()
-                .setPageSize(10)
-                .setPageNumber(5)
-                .build();
+	@Test
+	void getProducts_WithPageBeyondAvailable_ReturnsErrorInResponse() {
+	    GetProductsRequest request = GetProductsRequest.newBuilder()
+	            .setPageSize(10)
+	            .setPageNumber(2)
+	            .build();
 
-        List<Product> allProducts = Arrays.asList(testProduct);
-        when(productRepository.findAll()).thenReturn(allProducts);
+	    List<Product> allProducts = Arrays.asList(testProduct);
+	    when(productRepository.findAll()).thenReturn(allProducts);
 
-        
-        inventoryGrpcService.getProducts(request, getProductsResponseObserver);
+	    inventoryGrpcService.getProducts(request, getProductsResponseObserver);
 
-        
-        ArgumentCaptor<GetProductsResponse> responseCaptor = ArgumentCaptor.forClass(GetProductsResponse.class);
-        verify(getProductsResponseObserver).onNext(responseCaptor.capture());
+	    ArgumentCaptor<GetProductsResponse> responseCaptor = ArgumentCaptor.forClass(GetProductsResponse.class);
+	    verify(getProductsResponseObserver).onNext(responseCaptor.capture());
+	    verify(getProductsResponseObserver).onCompleted();
 
-        GetProductsResponse response = responseCaptor.getValue();
-        assertTrue(response.hasSuccess());
-        assertEquals(5, response.getSuccess().getCurrentPage());
-        assertEquals(1, response.getSuccess().getTotalPages());
-        assertEquals(0, response.getSuccess().getProductsCount());
-    }
+	    GetProductsResponse response = responseCaptor.getValue();
+
+	    assertTrue(response.hasError());
+	    assertEquals("PAGE_OUT_OF_RANGE", response.getError().getCode());
+	    assertEquals("Requested page number exceeds available data", response.getError().getMessage());
+	}
 
     @Test
     void getProducts_WithEmptyRepository_ReturnsEmptyResults() {
