@@ -55,3 +55,7 @@ jobs:
         file: order-service/Dockerfile
         push: true
         tags: ${{ vars.DOCKER_HUB_USERNAME }}/order-service:latest
+
+    - name: Run order service using Docker Compose
+      working-directory: order-service
+      run: docker compose up -d
