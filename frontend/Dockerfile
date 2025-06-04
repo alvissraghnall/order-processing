@@ -6,6 +6,8 @@ WORKDIR /usr/src/app
 
 COPY package*.json pnpm-lock.yaml* ./
 
+RUN pnpm setup
+
 RUN pnpm add -g @angular/cli
 
 RUN pnpm install --frozen-lockfile
