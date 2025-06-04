@@ -74,9 +74,9 @@ jobs:
         push: true
         tags: localhost:5000/order-service/app:latest
 
-     - name: Inspect Order
-        run: |
-          docker buildx imagetools inspect localhost:5000/order-service/app:latest
+    - name: Inspect Order
+      run: |
+        docker buildx imagetools inspect localhost:5000/order-service/app:latest
 
     - name: Run order service using Docker Compose
       working-directory: order-service
