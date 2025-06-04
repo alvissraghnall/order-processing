@@ -14,10 +14,10 @@ spring:
   h2:
     console:
       enabled: true
+  grpc:
+    server:
+      port: 8000
 
-grpc:
-  server:
-    port: 8000
 
 logging:
   level:
