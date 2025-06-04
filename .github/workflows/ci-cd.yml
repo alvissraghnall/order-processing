@@ -79,5 +79,5 @@ jobs:
         docker buildx imagetools inspect localhost:5000/order-service/app:latest
 
     - name: Run order service using Docker Compose
-      working-directory: order-service
+      working-directory: .
       run: docker compose up -d
