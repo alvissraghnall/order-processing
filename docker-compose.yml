@@ -26,7 +26,7 @@ services:
   angular:
     build: 
       context: frontend
-      dockerfile: frontend/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "4200:4200"
     volumes:
