@@ -7,7 +7,7 @@ import { OrderList } from './order-list/order-list';
   selector: 'app-root',
   imports: [RouterOutlet, OrderForm, OrderList],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class App {
   protected title = 'frontend';

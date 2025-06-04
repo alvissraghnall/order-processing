@@ -13,14 +13,18 @@ export interface IOrder {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class Order {
   private apiUrl = 'http://localhost:8080/api/orders';
 
   private http = inject(HttpClient);
 
-  createOrder(order: { customerName: string, productId: number | null, quantity: number }): Observable<IOrder> {
+  createOrder(order: {
+    customerName: string;
+    productId: number | null;
+    quantity: number;
+  }): Observable<IOrder> {
     return this.http.post<IOrder>(this.apiUrl, order);
   }
 

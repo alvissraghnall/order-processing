@@ -14,7 +14,7 @@ export interface IInventory {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class Inventory {
   private apiUrl = 'http://localhost:8080/api/orders/products';
