@@ -1,12 +1,12 @@
 FROM node:22-alpine
 
-RUN npm install -g pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+ENV PNPM_HOME=/usr/local/bin
 
 WORKDIR /usr/src/app
 
 COPY package*.json pnpm-lock.yaml* ./
-
-RUN pnpm setup
 
 RUN pnpm add -g @angular/cli
 
