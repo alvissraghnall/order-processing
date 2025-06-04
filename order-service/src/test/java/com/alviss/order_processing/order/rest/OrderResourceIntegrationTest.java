@@ -10,7 +10,14 @@ import com.alviss.order_processing.proto_common.UpdateStockResponse;
 import com.alviss.order_processing.proto_common.Product;
 import com.alviss.order_processing.proto_common.Error;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.hubspot.jackson.datatype.protobuf.ProtobufModule;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -19,6 +26,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -37,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+//@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class OrderResourceIntegrationTest {
 
     @Autowired
@@ -54,8 +62,13 @@ class OrderResourceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        objectMapper = new ObjectMapper();
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+				.build();
+
+        objectMapper = Jackson2ObjectMapperBuilder.json()
+        	    .modules(new ProtobufModule(), new JavaTimeModule(), new Jdk8Module())
+            	.build();
+
         orderRepository.deleteAll();
     }
 
@@ -97,7 +110,7 @@ class OrderResourceIntegrationTest {
                 .andExpect(jsonPath("$.productId").value(1))
                 .andExpect(jsonPath("$.productName").value("Test Product"))
                 .andExpect(jsonPath("$.quantity").value(2))
-                .andExpect(jsonPath("$.totalPrice").value(200.0))
+                .andExpect(jsonPath("$.price").value(200.0))
                 .andExpect(jsonPath("$.status").value("CONFIRMED"))
                 .andExpect(jsonPath("$.id").exists());
 
@@ -135,8 +148,8 @@ class OrderResourceIntegrationTest {
         when(inventoryClientService.checkStock(1L, 5)).thenReturn(stockResponse);
 
         mockMvc.perform(post("/api/orders")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Insufficient stock: Product not available."));
 
@@ -250,11 +263,11 @@ class OrderResourceIntegrationTest {
                 .andExpect(jsonPath("$[0].customerName").value("Customer 1"))
                 .andExpect(jsonPath("$[0].productName").value("Product 1"))
                 .andExpect(jsonPath("$[0].quantity").value(2))
-                .andExpect(jsonPath("$[0].totalPrice").value(200.0))
+                .andExpect(jsonPath("$[0].price").value(200.0))
                 .andExpect(jsonPath("$[1].customerName").value("Customer 2"))
                 .andExpect(jsonPath("$[1].productName").value("Product 2"))
                 .andExpect(jsonPath("$[1].quantity").value(1))
-                .andExpect(jsonPath("$[1].totalPrice").value(100.0));
+                .andExpect(jsonPath("$[1].price").value(100.0));
     }
 
     @Test
@@ -280,25 +293,27 @@ class OrderResourceIntegrationTest {
                 .setPrice(200.0)
                 .build();
 
-		GetProductsResponse.Builder builder = GetProductsResponse.newBuilder();
-		System.out.println(builder.getClass().getName());
-		builder.addProducts(product1);
-		builder.addProducts(product2);
+		GetProductsResponse.SuccessResponse successRes = GetProductsResponse.SuccessResponse.newBuilder()
+				.addProducts(product1)
+				.addProducts(product2)
+				.build();
+		
 
-        GetProductsResponse productsResponse = builder.build();
+		GetProductsResponse productsResponse = GetProductsResponse.newBuilder()
+                .setSuccess(successRes)
+                .build();
 
         when(inventoryClientService.getProducts()).thenReturn(productsResponse);
 
-         
-        mockMvc.perform(get("/api/orders/products"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.productsList", hasSize(2)))
-                .andExpect(jsonPath("$.productsList[0].id").value(1))
-                .andExpect(jsonPath("$.productsList[0].name").value("Product 1"))
-                .andExpect(jsonPath("$.productsList[0].price").value(100.0))
-                .andExpect(jsonPath("$.productsList[1].id").value(2))
-                .andExpect(jsonPath("$.productsList[1].name").value("Product 2"))
-                .andExpect(jsonPath("$.productsList[1].price").value(200.0));
+		mockMvc.perform(get("/api/orders/products"))
+			    .andExpect(status().isOk())
+			    .andExpect(jsonPath("$.products", hasSize(2)))
+			    .andExpect(jsonPath("$.products[0].id").value(1))
+			    .andExpect(jsonPath("$.products[0].name").value("Product 1"))
+			    .andExpect(jsonPath("$.products[0].price").value(100.0))
+			    .andExpect(jsonPath("$.products[1].id").value(2))
+			    .andExpect(jsonPath("$.products[1].name").value("Product 2"))
+			    .andExpect(jsonPath("$.products[1].price").value(200.0));
 
         verify(inventoryClientService).getProducts();
     }
@@ -340,7 +355,7 @@ class OrderResourceIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.customerName").value("Bulk Customer"))
                 .andExpect(jsonPath("$.quantity").value(100))
-                .andExpect(jsonPath("$.totalPrice").value(1000.0));
+                .andExpect(jsonPath("$.price").value(1000.0));
 
         verify(inventoryClientService).checkStock(1L, 100);
         verify(inventoryClientService).updateStock(1L, -100);
@@ -388,7 +403,7 @@ class OrderResourceIntegrationTest {
                 .andExpect(jsonPath("$[0].productId").value(3))
                 .andExpect(jsonPath("$[0].productName").value("Integration Product"))
                 .andExpect(jsonPath("$[0].quantity").value(3))
-                .andExpect(jsonPath("$[0].totalPrice").value(225.0))
+                .andExpect(jsonPath("$[0].price").value(225.0))
                 .andExpect(jsonPath("$[0].status").value("CONFIRMED"));
     }
 }

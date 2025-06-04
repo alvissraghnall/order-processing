@@ -14,6 +14,9 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 import java.util.Map;
 import com.alviss.order_processing.order.service.InventoryClientService;
+import com.alviss.order_processing.order.mapper.ProductMapper;
+import com.alviss.order_processing.order.dto.*;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -50,9 +53,18 @@ public class OrderResource {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
 
-    @GetMapping("/products")
-    public ResponseEntity<GetProductsResponse> getProducts() {
-        return ResponseEntity.ok(inventoryClientService.getProducts());
-    }
+	@GetMapping("/products")
+	public ResponseEntity<?> getProducts() {
+	    GetProductsResponse protoResponse = inventoryClientService.getProducts();
+		GetProductsResponseDto dto = ProductMapper.mapProtoToDto(protoResponse);
+
+	    if (dto.getError() != null) {
+	        return ResponseEntity
+	                .status(HttpStatus.BAD_REQUEST)
+	                .body(dto.getError());
+	    }
+
+	    return ResponseEntity.ok(dto);
+	}
 
 }

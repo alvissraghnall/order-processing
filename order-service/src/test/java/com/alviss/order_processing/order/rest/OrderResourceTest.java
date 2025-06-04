@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.junit.jupiter.api.BeforeEach;
 
 import org.springframework.boot.test.mock.mockito.MockBean;
+import com.alviss.order_processing.order.dto.GetProductsResponseDto;
+import com.alviss.order_processing.order.dto.ErrorDto;
 import org.springframework.context.annotation.Import;
 import com.alviss.order_processing.order.config.CorsConfig;
 import com.alviss.order_processing.order.config.DomainConfig;
@@ -175,12 +177,15 @@ class OrderResourceTest {
 
         when(inventoryClientService.getProducts()).thenReturn(mockResponse);
 
-        ResponseEntity<GetProductsResponse> response = orderResource.getProducts();
+        ResponseEntity<?> response = orderResource.getProducts();
 
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().getSuccess().getProductsCount());
-        assertEquals("Test Product", response.getBody().getSuccess().getProducts(0).getName());
+		
+		GetProductsResponseDto productResponse = (GetProductsResponseDto) response.getBody();
+	
+		assertEquals(1, productResponse.getProducts().size());
+		assertEquals("Test Product", productResponse.getProducts().get(0).getName());
     }
 
     @Test
@@ -194,11 +199,13 @@ class OrderResourceTest {
 
         when(inventoryClientService.getProducts()).thenReturn(mockResponse);
 
-        ResponseEntity<GetProductsResponse> response = orderResource.getProducts();
+        ResponseEntity<?> response = orderResource.getProducts();
 
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(400, response.getStatusCodeValue());
         assertNotNull(response.getBody());
-        assertTrue(response.getBody().hasError());
-        assertEquals("Internal error", response.getBody().getError().getMessage());
+		ErrorDto productResponse = (ErrorDto) response.getBody();
+
+        assertNotNull(productResponse.getCode());
+        assertEquals("Internal error", productResponse.getMessage());
     }
 }
