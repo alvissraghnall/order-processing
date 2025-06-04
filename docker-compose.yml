@@ -3,8 +3,8 @@ version: '3.8'
 services:
   inventory-service:
     build:
-      context: inventory-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: inventory-service/Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -12,8 +12,8 @@ services:
 
   order-service:
     build:
-      context: order-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: order-service/Dockerfile
     ports:
       - "8080:8080"
     environment:
