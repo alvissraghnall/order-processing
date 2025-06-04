@@ -7,16 +7,13 @@ on:
     branches: [ gh, main ]
 
 jobs:
-  docker:
+  build-and-deploy:
     runs-on: ubuntu-latest
     services:
       registry:
         image: registry:2
         ports:
           - 5000:5000
-
-  build-and-deploy:
-    runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
