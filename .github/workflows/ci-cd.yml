@@ -41,7 +41,7 @@ jobs:
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
     - name: Build and push inventory service image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: inventory-service/Dockerfile
@@ -49,7 +49,7 @@ jobs:
         tags: ${{ vars.DOCKER_HUB_USERNAME }}/inventory-service:latest
 
     - name: Build and push order service image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: order-service/Dockerfile
