@@ -7,6 +7,14 @@ on:
     branches: [ gh, main ]
 
 jobs:
+  docker:
+    runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
@@ -40,13 +48,25 @@ jobs:
         username: ${{ vars.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-    - name: Build and push inventory service image
-      uses: docker/build-push-action@v6
-      with:
-        context: .
-        file: inventory-service/Dockerfile
-        push: true
-        tags: ${{ vars.DOCKER_HUB_USERNAME }}/inventory-service:latest
+    - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: network=host
+      
+      - name: Build and push inventory service to local registry
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          context: .
+          file: order-service/Dockerfile
+          tags: localhost:5000/inventory-service/app:latest
+      
+      - name: Inspect Inventory
+        run: |
+          docker buildx imagetools inspect localhost:5000/inventory-service/app:latest
 
     - name: Build and push order service image
       uses: docker/build-push-action@v6
@@ -54,7 +74,11 @@ jobs:
         context: .
         file: order-service/Dockerfile
         push: true
-        tags: ${{ vars.DOCKER_HUB_USERNAME }}/order-service:latest
+        tags: localhost:5000/order-service/app:latest
+
+     - name: Inspect Order
+        run: |
+          docker buildx imagetools inspect localhost:5000/order-service/app:latest
 
     - name: Run order service using Docker Compose
       working-directory: order-service
