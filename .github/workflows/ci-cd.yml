@@ -25,6 +25,26 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        pnpm install
+
+    - name: Build frontend app
+      run: |
+        cd frontend
+        pnpm run build
+
     - name: Build and install proto-common
       run: |
         cd proto-common
@@ -77,6 +97,18 @@ jobs:
     - name: Inspect Order
       run: |
         docker buildx imagetools inspect localhost:5000/order-service/app:latest
+
+    - name: Build and push frontend to local registry
+      uses: docker/build-push-action@v6
+      with:
+        push: true
+        context: frontend
+        file: Dockerfile
+        tags: localhost:5000/angular-app:latest
+
+    - name: Inspect Angular App
+      run: |
+        docker buildx imagetools inspect localhost:5000/angular-app:latest
 
     - name: Run order service using Docker Compose
       working-directory: .

@@ -22,3 +22,28 @@ services:
       - INVENTORY_SERVICE_PORT=8000
     depends_on:
       - inventory-service
+
+  angular:
+    build: 
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+      - pnpm-store:/usr/src/app/.pnpm-store
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
+    networks:
+      - angular-network
+
+volumes:
+  pnpm-store:
+
+networks:
+  angular-network:
+    driver: bridge
