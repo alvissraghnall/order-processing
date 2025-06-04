@@ -43,7 +43,7 @@ jobs:
     - name: Build and push inventory service image
       uses: docker/build-push-action@v3
       with:
-        context: inventory-service
+        context: .
         file: inventory-service/Dockerfile
         push: true
         tags: ${{ vars.DOCKER_HUB_USERNAME }}/inventory-service:latest
@@ -51,7 +51,7 @@ jobs:
     - name: Build and push order service image
       uses: docker/build-push-action@v3
       with:
-        context: order-service
+        context: .
         file: order-service/Dockerfile
         push: true
         tags: ${{ vars.DOCKER_HUB_USERNAME }}/order-service:latest
