@@ -103,7 +103,7 @@ jobs:
       with:
         push: true
         context: frontend
-        file: Dockerfile
+        file: frontend/Dockerfile
         tags: localhost:5000/angular-app:latest
 
     - name: Inspect Angular App
